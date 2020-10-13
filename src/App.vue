@@ -1,32 +1,31 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
+    <b-navbar toggleable="lg" type="dark" variant="info" class="navbar">
+      <b-navbar-brand href="#"><img src="./assets/NEWX.png" height="30" alt="NEWX"></b-navbar-brand>
+      <b-collapse is-nav>
+        <b-navbar-nav>
+          <b-nav-item><router-link to="/select">查询</router-link></b-nav-item>
+          <b-nav-item><router-link to="/newx">NEWX</router-link></b-nav-item>
+          <b-nav-item><router-link to="/curriculum">课表</router-link></b-nav-item>
+          <b-nav-item><router-link to="/feedback">反馈</router-link></b-nav-item>
+          <b-nav-item><router-link to="/my">我的</router-link></b-nav-item>
+        </b-navbar-nav>
+      </b-collapse>
+    </b-navbar>
     <router-view/>
   </div>
 </template>
 
+
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+  .navbar {
+    margin-bottom: 60px;
   }
-}
+  a {
+    color: white!important;
+    :hover {
+      text-decoration: none!important;
+    }
+
+  }
 </style>
