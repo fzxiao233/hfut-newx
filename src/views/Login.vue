@@ -16,6 +16,8 @@
                 <div>
                     <b-button class="login-form-button" variant="primary" @click="login">登入</b-button>
                 </div>
+                <b-alert :show="alerts.show" variant="danger">{{alerts.text}}</b-alert>
+
             </div>
         </b-card>
     </div>
@@ -27,12 +29,30 @@
         data() {
             return {
                 username: "",
-                password: ""
+                password: "",
+                alerts: {
+                    show: false,
+                    text: ""
+                }
             }
         },
         methods: {
             login() {
+                if (this.username === "") {
+                    this.alerts = {
+                        show: true,
+                        text: "请输入学号"
+                    };
+                    return
+                } else if (this.password === "") {
+                    this.alerts = {
+                        show: true,
+                        text: "请输入密码"
+                    };
+                    return;
+                }
                 //  这里是鉴权
+                this.$store.commit("login");
                 this.$router.push('/select');
             }
         }
