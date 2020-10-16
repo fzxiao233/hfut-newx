@@ -17,7 +17,7 @@
 </template>
 
 
-<style lang="scss">
+<style scoped lang="scss">
   .navbar {
     margin-bottom: 60px;
   }
