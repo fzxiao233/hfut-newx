@@ -48,23 +48,21 @@
         </div>
         <div class="select-result" v-if="result.loaded">
             <b-card v-for="c in result.data" :key="c.classNumber" style="margin-bottom: 2rem">
-                <b-card-title>
-                    <label>{{c.courseName}}</label>
-                    <label class="select-result-title">教师：{{c.teacher}}</label>
-                </b-card-title>
-                <b-card-body>
-                    <div class="select-result-body">
-                        <b-avatar variant="primary" :text="'学分'+c.grade" size="4rem"></b-avatar>
-                        <div class="select-result-info">
-                            <b-card-text>{{c.class}}</b-card-text>
-                            <b-card-text>{{c.courseType}}</b-card-text>
-                        </div>
-                        <b-button class="select-result-button" v-b-toggle="'collapse-'+c.courseNumber"
-                                  variant="primary">详情
-                        </b-button>
+                <div class="select-result-title">
+                    <h4>{{c.courseName}}</h4>
+                    <h4>{{c.teacher}}</h4>
+                </div>
+                <div class="select-result-body">
+                    <b-avatar variant="primary" :text="'学分'+c.grade" size="4rem"></b-avatar>
+                    <div class="select-result-info">
+                        <b-card-text>{{c.class}}</b-card-text>
+                        <b-card-text>{{c.courseType}}</b-card-text>
                     </div>
-                </b-card-body>
-                <b-card-footer>
+                    <b-button class="select-result-button" v-b-toggle="'collapse-'+c.courseNumber"
+                              variant="primary">详情
+                    </b-button>
+                </div>
+                <b-card-footer style="color: gray">
                     {{c.courseTerm}}
                 </b-card-footer>
                 <b-collapse :id="'collapse-'+c.courseNumber" class="mt-2">
@@ -354,6 +352,11 @@
         text-align: center;
     }
 
+    .card-body {
+        display: flex;
+        flex-direction: column;
+    }
+
     .select {
         display: flex;
         justify-content: center;
@@ -377,7 +380,7 @@
 
             > h1 {
                 font-weight: 300;
-
+                font-size: 2.3rem;
             }
         }
 
@@ -406,22 +409,48 @@
         }
 
         &-result {
-            width: 75%;
+            /*width: 75%;*/
+            position: relative;
+            padding: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
             margin-top: 5rem;
+
+            > .card {
+                max-width: 586px;
+                width: 100%;
+            }
+
+            h4 {
+                font-size: 1rem;
+            }
 
             &-body {
                 display: flex;
-
+                align-items: center;
             }
 
             &-title {
-                float: inline-end;
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: nowrap;
             }
 
             &-info {
                 display: inline-flex;
-                margin-left: 4rem;
+                margin-left: 1rem;
                 flex-direction: column;
+                /*> p {*/
+                /*    overflow: hidden;*/
+                /*    text-overflow: ellipsis;*/
+                /*    white-space: nowrap;*/
+                /*    word-wrap: break-word;*/
+                /*    word-break: break-all;*/
+                /*}*/
+                > p {
+                    margin-bottom: 0;
+                }
             }
 
             &-button {
