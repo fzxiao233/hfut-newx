@@ -11,7 +11,7 @@
                 </div>
                 <div>
                     <p>密码:</p>
-                    <b-form-input placeholder="请输入您的密码" v-model="password"></b-form-input>
+                    <b-form-input placeholder="请输入您的密码" v-model="password" type="password"></b-form-input>
                 </div>
                 <div>
                     <b-button class="login-form-button" variant="primary" @click="login">登入</b-button>

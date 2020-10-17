@@ -10,21 +10,21 @@
                         <b-form-input v-model="params.classroomID" class="select-input"
                                       placeholder="教室编号"></b-form-input>
                         <b-radio-group v-model="params.place">
-                            <b-form-radio value="0">敬亭</b-form-radio>
-                            <b-form-radio value="1">新安</b-form-radio>
+                            <b-form-radio value="1">敬亭</b-form-radio>
+                            <b-form-radio value="2">新安</b-form-radio>
                         </b-radio-group>
-                        <b-button @click="buildPostData" class="select-button-submit" variant="primary">查询</b-button>
+                        <b-button @click="buildGetURL" class="select-button-submit" variant="primary">查询</b-button>
                         <b-alert :show="alerts.show" variant="danger">{{alerts.text}}</b-alert>
                     </b-tab>
                     <b-tab @click="shiftType('teacher')" class="select-tab" title="查老师">
                         <b-form-input v-model="params.teacher" placeholder="请输入教师姓名"></b-form-input>
-                        <b-button @click="buildPostData" class="select-button-submit" variant="primary">查询</b-button>
+                        <b-button @click="buildGetURL" class="select-button-submit" variant="primary">查询</b-button>
                         <b-alert :show="alerts.show" variant="danger">{{alerts.text}}</b-alert>
 
                     </b-tab>
                     <b-tab @click="shiftType('class')" class="select-tab" title="查课名">
                         <b-form-input v-model="params.teacher" placeholder="请输入课程名或代码"></b-form-input>
-                        <b-button @click="buildPostData" class="select-button-submit" variant="primary">查询</b-button>
+                        <b-button @click="buildGetURL" class="select-button-submit" variant="primary">查询</b-button>
                         <b-alert :show="alerts.show" variant="danger">{{alerts.text}}</b-alert>
 
                     </b-tab>
@@ -40,15 +40,14 @@
                             <b-select :options="options.section" v-model="params.date.section"
                                       class="select-form-select"></b-select>
                         </div>
-                        <b-button @click="buildPostData" class="select-button-submit" variant="primary">查询</b-button>
+                        <b-button @click="buildGetURL" class="select-button-submit" variant="primary">查询</b-button>
                         <b-alert :show="alerts.show" variant="danger">{{alerts.text}}</b-alert>
-
                     </b-tab>
                 </b-tabs>
             </b-card>
         </div>
         <div class="select-result" v-if="result.loaded">
-            <b-card v-for="c in result.data" :key="c.classNumber">
+            <b-card v-for="c in result.data" :key="c.classNumber" style="margin-bottom: 2rem">
                 <b-card-title>
                     <label>{{c.courseName}}</label>
                     <label class="select-result-title">教师：{{c.teacher}}</label>
@@ -78,7 +77,13 @@
                         </div>
                         <b-card-text>教师: {{c.teacher}}</b-card-text>
                         <b-card-text>教师等级: {{c.teacherLevel}}</b-card-text>
-                        <b-card-text>时间地点: {{c.courseTimePlace}}</b-card-text>
+                        <div>
+                            <b-card-text>时间地点:</b-card-text>
+                            <div v-for="t of c.timePlace" style="margin-left: 1rem; margin-bottom: 1rem">
+                                <b-card-text style="margin-bottom: unset">时间：{{t.week}}, {{t.lesson}}</b-card-text>
+                                <b-card-text>地点：{{t.place}}</b-card-text>
+                            </div>
+                        </div>
                         <b-card-text>课程类型: {{c.courseType}}</b-card-text>
                         <b-card-text>开课学期: {{c.courseTerm}}</b-card-text>
                     </b-card>
@@ -90,6 +95,8 @@
 
 <script>
     import {num2Text, reduceObj} from "../utils";
+
+    const axios = require('axios');
 
     export default {
         name: "Select",
@@ -114,25 +121,26 @@
                 },
                 result: {
                     loaded: false,
-                    data: [{
-                        courseName: "电工与电子技术B",
-                        courseType: "学科基础和专业必修课",
-                        courseTerm: "2020-2021学年第一学期",
-                        studentDepartment: "环境工程学院",
-                        method: "笔试",
-                        class: "环境工程 19-1 班",
-                        teacherDepartment: "环境工程学院",
-                        teacher: "苗刚中",
-                        teacherLevel: "副教授",
-                        classNumber: "0400062B--004",
-                        courseNumber: "0400062B",
-                        studentDepartment2: "",
-                        teacherDepartment2: "",
-                        courseTime: "4~12周 周一 第五节~第六节;\n4~12周 周三 第三节~第四节",
-                        courseTimePlace: "4~12周 周一 第五节~第六节 宣城校区 新安学堂222; \n4~12周 周三 第三节~第四节 宣城校区 新安学堂220",
-                        courseTimePlaceTeacher: "4~12周 周一 第五节~第六节 宣城校区 新安学堂222 祁高飞; \n4~12周 周三 第三节~第四节 宣城校区 新安学堂220 祁高飞",
-                        grade: "3"
-                    }]
+                    // data: [{
+                    //     courseName: "电工与电子技术B",
+                    //     courseType: "学科基础和专业必修课",
+                    //     courseTerm: "2020-2021学年第一学期",
+                    //     studentDepartment: "环境工程学院",
+                    //     method: "笔试",
+                    //     class: "环境工程 19-1 班",
+                    //     teacherDepartment: "环境工程学院",
+                    //     teacher: "苗刚中",
+                    //     teacherLevel: "副教授",
+                    //     classNumber: "0400062B--004",
+                    //     courseNumber: "0400062B",
+                    //     studentDepartment2: "",
+                    //     teacherDepartment2: "",
+                    //     courseTime: "4~12周 周一 第五节~第六节;\n4~12周 周三 第三节~第四节",
+                    //     courseTimePlace: "4~12周 周一 第五节~第六节 宣城校区 新安学堂222; \n4~12周 周三 第三节~第四节 宣城校区 新安学堂220",
+                    //     courseTimePlaceTeacher: "4~12周 周一 第五节~第六节 宣城校区 新安学堂222 祁高飞; \n4~12周 周三 第三节~第四节 宣城校区 新安学堂220 祁高飞",
+                    //     grade: "3"
+                    // }]
+                    data: []
                 },
                 alerts: {
                     show: false,
@@ -172,15 +180,17 @@
 
                 for (let i = 1; i <= 7; i += 2) {
                     const sectionTemp = new OptionsTemp();
-                    sectionTemp.value = i;
+                    sectionTemp.value = i * 100 + i + 1;
                     sectionTemp.text = `第${String(i)}~${String(i + 1)}节`;
                     section.push(sectionTemp);
                 }
-                section.push(new OptionsTemp(8, "第9~11节"));
+                section.push(new OptionsTemp(9011, "第9~11节"));
                 this.options.section = section;
 
             },
             shiftType(type) {
+                this.alerts.show = false;
+                this.result.loaded = false;
                 this.type = type;
             },
             showAlert(text) {
@@ -199,6 +209,91 @@
                     }
                 }
                 return !isEmpty;
+            },
+            buildGetURL() {
+                this.result.loaded = false;
+                let getUrl;
+                switch (this.type) {
+                    case "classroom":
+                        const roomId = this.params.place + this.params.classroomID;
+                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/classroom/index/classroom/?classroom=${roomId}`;
+                        break;
+                    case "teacher":
+                        const teacher = this.params.teacher;
+                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/teacher/index/teacher/?teacher=${teacher}`;
+                        break;
+                    case "class":
+                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/lesson/index/lesson/?lesson=${this.params.class}`;
+                        break;
+                    case "date":
+                        const date = this.params.date;
+                        const _class = date.day + "0" + String(date.section);
+                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/time/index/time/?week=${this.params.date.teachingWeek}&class=${_class}`;
+                }
+                this.doSelectByGet(getUrl);
+            },
+            doSelectByGet(url) {
+                axios
+                    .get(url)
+                    .then(resp => {
+                        this.result.data = this.parser(resp);
+                        this.result.loaded = true;
+                    })
+            },
+            parser(resp) {
+                let result = [];
+                const parserWeek = (i) => {
+                    const rawWeek = String(i.week);
+                    if (rawWeek.length === 4) {
+                        i.week = `第${rawWeek.substring(0, 2)}-${rawWeek.substring(2).replace("0", "")}周`;
+                    } else {
+                        i.week = `第${rawWeek.charAt(0)}-${rawWeek.substring(1).replace("0", "")}周`;
+                    }
+                };
+                const parserLesson = (i) => {
+                    let result = [];
+                    let buffer = "";
+                    const rawLesson = String(i.lesson);
+                    let j = 0;
+                    while (j < rawLesson.length) {
+                        if (rawLesson[j] === "0") {
+                            result.push(buffer);
+                            buffer = [];
+                            j++;
+                        } else {
+                            buffer += rawLesson[j];
+                            j++
+                        }
+                    }
+                    if (buffer !== "") {
+                        result.push(buffer);
+                    }
+                    i.lesson = `星期${result[0]}, 第${result[1]}-${result[2]}节`
+                };
+                const parserPlace = (i) => {
+                    let rawPlace = String(i.place);
+                    let building = "";
+                    let roomId = rawPlace.substring(1);
+                    if (rawPlace.charAt(0) === "1") {
+                        building = "敬亭"
+                    } else if (rawPlace.charAt(0) === "2") {
+                        building = "新安"
+                    } else {
+                        building = "风雨操场";
+                        roomId = ""
+                    }
+                    i.place = building + roomId;
+                };
+                for (let i of resp.data.data) {
+                    for (let k of i['timePlace']) {
+                        parserLesson(k);
+                        parserPlace(k);
+                        parserWeek(k);
+                    }
+                    result.push(i);
+                }
+                return result;
+
             },
             buildPostData() {
                 let postData;
@@ -228,7 +323,7 @@
                             }
                         };
                         break;
-                    case "data":
+                    case "date":
                         postData = {
                             type: this.type,
                             params: {
