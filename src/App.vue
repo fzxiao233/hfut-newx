@@ -2,7 +2,8 @@
   <div id="app">
     <b-navbar toggleable="lg" type="dark" variant="info" class="navbar">
       <b-navbar-brand href="#"><img src="./assets/NEWX.png" height="30" alt="NEWX"></b-navbar-brand>
-      <b-collapse is-nav>
+      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+      <b-collapse is-nav id="nav-collapse">
         <b-navbar-nav>
           <b-nav-item><router-link to="/select">查询</router-link></b-nav-item>
           <b-nav-item><router-link to="/newx">NEWX</router-link></b-nav-item>
