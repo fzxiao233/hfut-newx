@@ -36,10 +36,10 @@
                             <label>星期：</label>
                             <b-select :options="options.day" v-model="params.date.day"
                                       class="select-form-select"></b-select>
-                            <label>节数：</label>
-                            <b-select :options="options.section" v-model="params.date.section"
-                                      class="select-form-select"></b-select>
                         </div>
+                        <label>节数：</label>
+                        <b-select :options="options.section" v-model="params.date.section"
+                                  class="select-form-select"></b-select>
                         <b-button @click="buildGetURL" class="select-button-submit" variant="primary">查询</b-button>
                         <b-alert :show="alerts.show" variant="danger">{{alerts.text}}</b-alert>
                     </b-tab>
@@ -47,7 +47,8 @@
             </b-card>
         </div>
         <div class="select-result" v-if="result.loaded">
-            <b-card v-for="c in result.data" :key="c.classNumber" style="margin-bottom: 2rem">
+            <b-card v-for="c in result.rawData.slice((page - 1) * 10, 20 * page)" :key="c.id"
+                    style="margin-bottom: 2rem">
                 <div class="select-result-title">
                     <h4>{{c.courseName}}</h4>
                     <h4>{{c.teacher}}</h4>
@@ -58,14 +59,14 @@
                         <b-card-text>{{c.class}}</b-card-text>
                         <b-card-text>{{c.courseType}}</b-card-text>
                     </div>
-                    <b-button class="select-result-button" v-b-toggle="'collapse-'+c.courseNumber"
+                    <b-button class="select-result-button" v-b-toggle="'collapse-'+c.id"
                               variant="primary">详情
                     </b-button>
                 </div>
                 <b-card-footer style="color: gray">
                     {{c.courseTerm}}
                 </b-card-footer>
-                <b-collapse :id="'collapse-'+c.courseNumber" class="mt-2">
+                <b-collapse :id="'collapse-'+c.id" class="mt-2">
                     <b-card>
                         <b-card-text>课程代码: {{c.courseNumber}}</b-card-text>
                         <b-card-text>班级: {{c.class}}</b-card-text>
@@ -87,6 +88,8 @@
                     </b-card>
                 </b-collapse>
             </b-card>
+            <b-pagination-nav :link-gen="linkGen" :number-of-pages="Math.ceil(this.result.count / 20)" use-router
+                              v-model="page"></b-pagination-nav>
         </div>
     </div>
 </template>
@@ -106,6 +109,7 @@
                     section: []
                 },
                 type: "classroom",
+                page: 1,
                 params: {
                     place: "",
                     classroomID: "",
@@ -138,7 +142,8 @@
                     //     courseTimePlaceTeacher: "4~12周 周一 第五节~第六节 宣城校区 新安学堂222 祁高飞; \n4~12周 周三 第三节~第四节 宣城校区 新安学堂220 祁高飞",
                     //     grade: "3"
                     // }]
-                    data: []
+                    rawData: undefined,
+                    count: undefined
                 },
                 alerts: {
                     show: false,
@@ -170,26 +175,36 @@
 
                 for (let i = 1; i <= 7; i++) {
                     const dayTemp = new OptionsTemp();
-                    dayTemp.value = i;
-                    dayTemp.text = `星期${num2Text(i)}`;
+                    // dayTemp.value = i;
+                    // dayTemp.text = `周${num2Text(i)}`;
+                    dayTemp.value = dayTemp.text = `周${num2Text(i)}`;
                     day.push(dayTemp);
                 }
                 this.options.day = day;
 
                 for (let i = 1; i <= 7; i += 2) {
                     const sectionTemp = new OptionsTemp();
-                    sectionTemp.value = i * 100 + i + 1;
-                    sectionTemp.text = `第${String(i)}~${String(i + 1)}节`;
+                    // sectionTemp.value = i * 100 + i + 1;
+                    // sectionTemp.text = `第${num2Text(i)}节~第${num2Text(i+1)}节`;
+                    sectionTemp.value = sectionTemp.text = `第${num2Text(i)}节~第${num2Text(i + 1)}节`;
                     section.push(sectionTemp);
                 }
-                section.push(new OptionsTemp(9011, "第9~11节"));
+                section.push(new OptionsTemp(9011, "第九节~第一节"));
                 this.options.section = section;
 
             },
             shiftType(type) {
                 this.alerts.show = false;
-                this.result.loaded = false;
+                this.result = {
+                    loaded: false,
+                    data: [],
+                    rawData: undefined,
+                    count: undefined
+                }
                 this.type = type;
+            },
+            linkGen(pageNum) {
+                return pageNum === 1 ? '?' : `?page=${pageNum}`
             },
             showAlert(text) {
                 this.alerts = {
@@ -213,20 +228,33 @@
                 let getUrl;
                 switch (this.type) {
                     case "classroom":
-                        const roomId = this.params.place + this.params.classroomID;
-                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/classroom/index/classroom/?classroom=${roomId}`;
+                        let building
+                        switch (this.params.place) {
+                            case "1":
+                                building = "敬亭学堂";
+                                break;
+                            case "2":
+                                building = "新安学堂";
+                                break;
+                        }
+                        const roomID = building + this.params.classroomID;
+                        // getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/classroom/index/classroom/?classroom=${roomId}`;
+                        getUrl = `http://127.0.0.1:8080/api/v1/class/classroom?roomID=${roomID}`;
                         break;
                     case "teacher":
                         const teacher = this.params.teacher;
-                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/teacher/index/teacher/?teacher=${teacher}`;
+                        getUrl = `http://127.0.0.1:8080/api/v1/class/teacher?teacher=${teacher}`;
+                        // getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/teacher/index/teacher/?teacher=${teacher}`;
                         break;
                     case "class":
-                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/lesson/index/lesson/?lesson=${this.params.class}`;
+                        getUrl = `http://127.0.0.1:8080/api/v1/class/courseName?courseName=${this.params.class}`;
+                        // getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/lesson/index/lesson/?lesson=${this.params.class}`;
                         break;
                     case "date":
                         const date = this.params.date;
-                        const _class = date.day + "0" + String(date.section);
-                        getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/time/index/time/?week=${this.params.date.teachingWeek}&class=${_class}`;
+                        // const _class = date.day + "0" + String(date.section);
+                        // getUrl = `https://lesson.newxstudio.com/lesson/public/index.php/index/time/index/time/?week=${this.params.date.teachingWeek}&class=${_class}`;
+                        getUrl = `http://127.0.0.1:8080/api/v1/class/date?teachingWeek=${date.teachingWeek}&day=${date.day}&section=${date.section}`
                 }
                 this.doSelectByGet(getUrl);
             },
@@ -234,7 +262,9 @@
                 axios
                     .get(url)
                     .then(resp => {
-                        this.result.data = this.parser(resp);
+                        // this.result.data = this.parser(resp);
+                        this.result.rawData = resp.data.data;
+                        this.result.count = resp.data.count;
                         this.result.loaded = true;
                     })
             },
@@ -292,54 +322,6 @@
                 }
                 return result;
 
-            },
-            buildPostData() {
-                let postData;
-                switch (this.type) {
-                    case "classroom":
-                        postData = {
-                            type: this.type,
-                            params: {
-                                place: this.params.place,
-                                classroomID: this.params.classroomID
-                            }
-                        };
-                        break;
-                    case "teacher":
-                        postData = {
-                            type: this.type,
-                            params: {
-                                teacher: this.params.teacher
-                            }
-                        };
-                        break;
-                    case "class":
-                        postData = {
-                            type: this.type,
-                            params: {
-                                class: this.params.class
-                            }
-                        };
-                        break;
-                    case "date":
-                        postData = {
-                            type: this.type,
-                            params: {
-                                date: this.params.date
-                            }
-                        };
-                        break;
-                }
-                if (!this.validateData(postData)) {
-                    this.showAlert("请完整填写查询条件");
-                    return;
-                }
-                this.alerts.show = false;
-                this.doSelect(postData)
-            },
-            doSelect(postData) {
-                // 接口请求
-                this.result.loaded = true;
             }
         }
     }
@@ -416,11 +398,17 @@
             flex-wrap: wrap;
             justify-content: space-around;
             margin-top: 5rem;
+            flex-direction: column;
+            align-items: center;
 
             > .card {
-                max-width: 586px;
+                max-width: 720px;
                 width: 100%;
             }
+
+            /*.card-body {*/
+            /*    flex-grow: 0;*/
+            /*}*/
 
             h4 {
                 font-size: 1rem;
